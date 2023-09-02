@@ -9,20 +9,16 @@ int wrapping_mod(int x, int y) {
     return ((x % y) + y) % y;
 }
 
+char encode(char c, int rotation) {
+    auto alphabet = std::isupper(c) ? ALPHABET_BIG : ALPHABET_SMALL;
+    return alphabet[wrapping_mod(c - alphabet[0] + rotation, ALPHABET_LENGTH)];
+}
+
 std::string encode(const std::string &text, int rotation) {
-    std::string result;
-    result.reserve(text.size() + 1);
+    std::string result{text};
 
-    for (auto c: text) {
-        if (!std::isalpha(c)) {
-            result += c;
-            continue;
-        }
-
-        auto alphabet = std::isupper(c) ? ALPHABET_BIG : ALPHABET_SMALL;
-        result += alphabet[wrapping_mod(c - alphabet[0] + rotation, ALPHABET_LENGTH)];
-    }
-
+    std::transform(text.begin(), text.end(), result.begin(),
+                   [rotation](auto c) { return std::isalpha(c) ? encode(c, rotation) : c; });
     return result;
 }
 
@@ -39,10 +35,11 @@ int main(int argc, char **argv) {
 
     if (!text.empty()) {
         std::cout << encode(text, key) << std::endl;
-    } else while (!std::cin.eof()) {
-        std::getline(std::cin, text);
-        std::cout << encode(text, key) << std::endl;
-    }
+    } else
+        while (!std::cin.eof()) {
+            std::getline(std::cin, text);
+            std::cout << encode(text, key) << std::endl;
+        }
 
     return 0;
 }
